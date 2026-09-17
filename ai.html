@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI-LMS | Student Performance Analytics</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#3157d5;--primary2:#5b4fd6;--bg:#f5f7fb;--card:#fff;
+  --text:#172033;--muted:#718096;--border:#e6e9f0;--success:#16a878;
+  --warning:#f59e0b;--danger:#ef5350;--shadow:0 8px 28px rgba(25,40,80,.07)
+}
+body{font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button{font:inherit;cursor:pointer;border:0}
+.app{display:flex;min-height:100vh}
+.sidebar{width:240px;background:#fff;border-right:1px solid var(--border);padding:22px 15px;position:fixed;top:0;bottom:0;z-index:10}
+.logo{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:800;margin:0 8px 28px}
+.logo-badge{width:35px;height:35px;border-radius:11px;background:linear-gradient(135deg,#3157d5,#654fd5);color:#fff;display:grid;place-items:center}
+.nav{display:flex;flex-direction:column;gap:5px}
+.nav button{background:none;color:#687386;text-align:left;padding:12px 14px;border-radius:9px;font-weight:600;display:flex;align-items:center;gap:12px}
+.nav button:hover,.nav button.active{background:#edf2ff;color:var(--primary)}
+.nav .icon{width:20px;text-align:center}
+.main{margin-left:240px;width:calc(100% - 240px);padding:24px 30px}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:25px}
+.greeting h1{font-size:25px;margin-bottom:4px}.greeting p{color:var(--muted)}
+.profile{display:flex;align-items:center;gap:12px}
+.avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#ffd6bd,#b9c7ff);display:grid;place-items:center;font-weight:800}
+.grid{display:grid;gap:18px}
+.stats{grid-template-columns:repeat(4,1fr);margin-bottom:18px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:var(--shadow)}
+.stat{display:flex;align-items:center;justify-content:space-between}
+.stat h3{font-size:25px;margin:4px 0}.stat p{color:var(--muted);font-size:13px}.stat small{color:var(--success);font-weight:700}
+.circle{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:conic-gradient(var(--primary) 78%,#e9edf7 0)}
+.circle span{background:#fff;border-radius:50%;width:45px;height:45px;display:grid;place-items:center;font-size:12px}
+.two{grid-template-columns:1.7fr 1fr}.three{grid-template-columns:repeat(3,1fr)}
+.card-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.card-title h2{font-size:16px}.link{color:var(--primary);font-size:13px;font-weight:700}
+.chart{height:215px;display:flex;align-items:flex-end;gap:18px;padding:12px 10px 24px;border-bottom:1px solid var(--border);position:relative}
+.chart:before,.chart:after{content:"";position:absolute;left:0;right:0;border-top:1px dashed #e7eaf1}
+.chart:before{top:45px}.chart:after{top:110px}
+.bar-group{flex:1;height:100%;display:flex;align-items:flex-end;justify-content:center;gap:5px;position:relative;z-index:1}
+.bar{width:15px;border-radius:5px 5px 0 0;background:linear-gradient(#3157d5,#6e5fe0)}
+.bar.alt{background:#25a89a}.month{position:absolute;bottom:-22px;font-size:11px;color:var(--muted)}
+.subject{margin-bottom:15px}.subject-row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:7px}.progress{height:8px;background:#edf0f6;border-radius:20px;overflow:hidden}.progress i{display:block;height:100%;border-radius:20px;background:linear-gradient(90deg,#3157d5,#6b5ee0)}
+.progress.green i{background:#18a982}.progress.orange i{background:#f5a623}.progress.red i{background:#ef5350}
+.events{display:flex;flex-direction:column;gap:12px}.event{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border);border-radius:10px}
+.event-icon{width:34px;height:34px;border-radius:9px;background:#eef2ff;display:grid;place-items:center}.event b{font-size:13px}.event span{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+.ai-box{background:linear-gradient(135deg,#f2fbf7,#f7f8ff);border:1px solid #d7eee4}
+.ai-badge{display:inline-block;background:#dcf7ed;color:#13815f;padding:5px 8px;border-radius:20px;font-size:11px;font-weight:800;margin-bottom:12px}
+.ai-box p{font-size:13px;line-height:1.55;color:#4d5a6e;margin-bottom:15px}
+.btn{padding:9px 14px;border-radius:8px;background:var(--primary);color:#fff;font-weight:700;font-size:12px}
+.btn.secondary{background:#edf2ff;color:var(--primary)}
+.page{display:none}.page.active{display:block}
+.course-grid{grid-template-columns:repeat(3,1fr)}
+.course{position:relative;overflow:hidden}.course-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.course-icon{width:42px;height:42px;border-radius:11px;background:#eef2ff;display:grid;place-items:center;font-size:21px}
+.course h3{font-size:15px;margin-bottom:5px}.course p{font-size:12px;color:var(--muted);margin-bottom:18px}
+.course .percent{font-size:12px;color:var(--muted);margin-bottom:7px;display:flex;justify-content:space-between}
+.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse}.table th,.table td{text-align:left;padding:14px 12px;border-bottom:1px solid var(--border);font-size:13px}.table th{color:var(--muted);font-size:11px;text-transform:uppercase}.status{padding:5px 9px;border-radius:20px;font-size:11px;font-weight:800}.submitted{background:#dcf7ed;color:#12825e}.pending{background:#fff1dd;color:#b96c00}.graded{background:#e9edff;color:#3851bd}
+.recommendations{display:flex;flex-direction:column;gap:12px}.recommendation{padding:15px;border:1px solid var(--border);border-radius:11px;display:flex;gap:12px;align-items:flex-start}.rec-icon{width:35px;height:35px;border-radius:9px;background:#e8f7f1;display:grid;place-items:center}.recommendation h3{font-size:13px;margin-bottom:4px}.recommendation p{font-size:12px;color:var(--muted);line-height:1.4}
+.exam-layout{display:grid;grid-template-columns:230px 1fr;gap:18px}.questions button{width:36px;height:36px;margin:4px;border-radius:8px;background:#eef2ff;color:#3157d5;font-weight:700}.questions button.selected{background:#3157d5;color:#fff}.question h2{font-size:18px;margin-bottom:20px}.option{display:block;padding:14px;border:1px solid var(--border);border-radius:9px;margin:9px 0;cursor:pointer}.option:hover{background:#f6f8ff}.timer{color:#3157d5;font-weight:800}.mobile-menu{display:none}
+@media(max-width:1000px){.sidebar{width:210px}.main{margin-left:210px;width:calc(100% - 210px);padding:20px}.stats{grid-template-columns:repeat(2,1fr)}.course-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.sidebar{display:none}.main{margin-left:0;width:100%;padding:15px}.stats,.two,.three,.course-grid,.exam-layout{grid-template-columns:1fr}.topbar{align-items:flex-start}.mobile-menu{display:block}.card{padding:15px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="logo"><div class="logo-badge">AI</div> AI-LMS</div>
+  <nav class="nav">
+    <button class="active" data-page="dashboard"><span class="icon">⌂</span> Dashboard</button>
+    <button data-page="courses"><span class="icon">▣</span> My Courses</button>
+    <button data-page="assignments"><span class="icon">✓</span> Assignments</button>
+    <button data-page="exams"><span class="icon">▤</span> Exams</button>
+    <button data-page="attendance"><span class="icon">◉</span> Attendance</button>
+    <button data-page="analytics"><span class="icon">◒</span> Analytics</button>
+    <button data-page="ai"><span class="icon">✦</span> AI Assistant</button>
+    <button data-page="recommendations"><span class="icon">◇</span> Recommendations</button>
+  </nav>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="greeting"><h1 id="pageTitle">Welcome back, Deekshitha 👋</h1><p id="pageSubtitle">Here's your academic performance overview.</p></div>
+    <div class="profile"><span>🔔</span><div class="avatar">D</div></div>
+  </div>
+
+  <section class="page active" id="dashboard">
+    <div class="grid stats">
+      <div class="card stat"><div><p>Overall Performance</p><h3>78%</h3><small>Good</small></div><div class="circle"><span>78%</span></div></div>
+      <div class="card stat"><div><p>Attendance</p><h3>85%</h3><small>Good</small></div><div class="circle" style="background:conic-gradient(#18a982 85%,#e9edf7 0)"><span>85%</span></div></div>
+      <div class="card stat"><div><p>Assignments</p><h3>91%</h3><small>Submitted</small></div><div class="circle" style="background:conic-gradient(#20a98c 91%,#e9edf7 0)"><span>91%</span></div></div>
+      <div class="card stat"><div><p>Exams</p><h3>74%</h3><small>Average</small></div><div class="circle" style="background:conic-gradient(#6b5fe0 74%,#e9edf7 0)"><span>74%</span></div></div>
+    </div>
+
+    <div class="grid two">
+      <div class="card">
+        <div class="card-title"><h2>Performance Overview</h2><span class="link">This Semester ▾</span></div>
+        <div class="chart">
+          <div class="bar-group"><i class="bar" style="height:42%"></i><i class="bar alt" style="height:50%"></i><span class="month">Jan</span></div>
+          <div class="bar-group"><i class="bar" style="height:62%"></i><i class="bar alt" style="height:74%"></i><span class="month">Feb</span></div>
+          <div class="bar-group"><i class="bar" style="height:58%"></i><i class="bar alt" style="height:69%"></i><span class="month">Mar</span></div>
+          <div class="bar-group"><i class="bar" style="height:66%"></i><i class="bar alt" style="height:73%"></i><span class="month">Apr</span></div>
+          <div class="bar-group"><i class="bar" style="height:60%"></i><i class="bar alt" style="height:70%"></i><span class="month">May</span></div>
+          <div class="bar-group"><i class="bar" style="height:78%"></i><i class="bar alt" style="height:84%"></i><span class="month">Jun</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><h2>Subjects</h2><span class="link">View all</span></div>
+        <div class="subject"><div class="subject-row"><span>Database Systems</span><b>86%</b></div><div class="progress"><i style="width:86%"></i></div></div>
+        <div class="subject"><div class="subject-row"><span>Java Programming</span><b>72%</b></div><div class="progress"><i style="width:72%"></i></div></div>
+        <div class="subject"><div class="subject-row"><span>Mathematics</span><b>51%</b></div><div class="progress orange"><i style="width:51%"></i></div></div>
+        <div class="subject"><div class="subject-row"><span>Computer Networks</span><b>84%</b></div><div class="progress green"><i style="width:84%"></i></div></div>
+      </div>
+    </div>
+
+    <div class="grid two" style="margin-top:18px">
+      <div class="card">
+        <div class="card-title"><h2>Upcoming</h2><span class="link">View Calendar</span></div>
+        <div class="events">
+          <div class="event"><div class="event-icon">📝</div><div><b>DBMS Assignment</b><span>20 May 2026</span></div></div>
+          <div class="event"><div class="event-icon">🧮</div><div><b>Mathematics Quiz</b><span>22 May 2026</span></div></div>
+          <div class="event"><div class="event-icon">💻</div><div><b>Java Exam</b><span>30 May 2026</span></div></div>
+        </div>
+      </div>
+      <div class="card ai-box">
+        <span class="ai-badge">✦ AI RECOMMENDATION</span>
+        <h2 style="font-size:17px;margin-bottom:9px">Improve Mathematics</h2>
+        <p>Your recent Mathematics scores are below your average. Focus on Probability and Statistics and complete the recommended practice quiz.</p>
+        <button class="btn" onclick="showPage('recommendations')">View Details</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" id="courses">
+    <div class="grid course-grid">
+      <div class="card course"><div class="course-top"><div class="course-icon">🗄️</div><b>86%</b></div><h3>Database Systems</h3><p>Prof. Sharma</p><div class="percent"><span>Progress</span><b>86%</b></div><div class="progress"><i style="width:86%"></i></div></div>
+      <div class="card course"><div class="course-top"><div class="course-icon">🔥</div><b>72%</b></div><h3>Java Programming</h3><p>Prof. Mehta</p><div class="percent"><span>Progress</span><b>72%</b></div><div class="progress"><i style="width:72%"></i></div></div>
+      <div class="card course"><div class="course-top"><div class="course-icon">📐</div><b>51%</b></div><h3>Mathematics</h3><p>Prof. Rao</p><div class="percent"><span>Progress</span><b>51%</b></div><div class="progress orange"><i style="width:51%"></i></div></div>
+      <div class="card course"><div class="course-top"><div class="course-icon">🌐</div><b>84%</b></div><h3>Computer Networks</h3><p>Prof. Gupta</p><div class="percent"><span>Progress</span><b>84%</b></div><div class="progress green"><i style="width:84%"></i></div></div>
+      <div class="card course"><div class="course-top"><div class="course-icon">⚙️</div><b>68%</b></div><h3>Operating Systems</h3><p>Prof. Verma</p><div class="percent"><span>Progress</span><b>68%</b></div><div class="progress"><i style="width:68%"></i></div></div>
+      <div class="card course"><div class="course-top"><div class="course-icon">📊</div><b>79%</b></div><h3>Data Structures</h3><p>Prof. Khan</p><div class="percent"><span>Progress</span><b>79%</b></div><div class="progress"><i style="width:79%"></i></div></div>
+    </div>
+  </section>
+
+  <section class="page" id="assignments">
+    <div class="card">
+      <div class="card-title"><h2>Assignments</h2><button class="btn">+ New Assignment</button></div>
+      <div class="table-wrap"><table class="table"><thead><tr><th>Title</th><th>Course</th><th>Due Date</th><th>Status</th><th>Marks</th></tr></thead>
+      <tbody>
+      <tr><td>DBMS Normalization</td><td>Database Systems</td><td>20 May 2026</td><td><span class="status submitted">Submitted</span></td><td>18/20</td></tr>
+      <tr><td>Java OOP Concepts</td><td>Java Programming</td><td>22 May 2026</td><td><span class="status submitted">Submitted</span></td><td>17/20</td></tr>
+      <tr><td>Maths Problem Set 4</td><td>Mathematics</td><td>25 May 2026</td><td><span class="status pending">Pending</span></td><td>—</td></tr>
+      <tr><td>CN Lab Report</td><td>Computer Networks</td><td>28 May 2026</td><td><span class="status pending">Pending</span></td><td>—</td></tr>
+      </tbody></table></div>
+    </div>
+  </section>
+
+  <section class="page" id="exams">
+    <div class="exam-layout">
+      <div class="card questions"><h3 style="margin-bottom:15px">Question Navigation</h3><div id="qbuttons"></div></div>
+      <div class="card question"><div class="card-title"><h2>Database Systems — Mid Term</h2><span class="timer">00:45:30</span></div>
+        <p style="color:var(--muted);font-size:13px;margin-bottom:20px">Question <b id="qnum">1</b> of 10 · 3 Marks</p>
+        <h2 id="questionText">Which of the following is a type of key used in DBMS?</h2>
+        <label class="option"><input type="radio" name="answer"> A. Super Key</label>
+        <label class="option"><input type="radio" name="answer"> B. Foreign Key</label>
+        <label class="option"><input type="radio" name="answer"> C. Candidate Key</label>
+        <label class="option"><input type="radio" name="answer"> D. All of the above</label>
+        <div style="display:flex;justify-content:space-between;margin-top:22px"><button class="btn secondary">← Previous</button><button class="btn" onclick="nextQuestion()">Next →</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" id="attendance">
+    <div class="grid three">
+      <div class="card"><p style="color:var(--muted)">Database Systems</p><h2 style="margin:8px 0">92%</h2><div class="progress green"><i style="width:92%"></i></div></div>
+      <div class="card"><p style="color:var(--muted)">Java Programming</p><h2 style="margin:8px 0">85%</h2><div class="progress"><i style="width:85%"></i></div></div>
+      <div class="card"><p style="color:var(--muted)">Mathematics</p><h2 style="margin:8px 0">74%</h2><div class="progress orange"><i style="width:74%"></i></div></div>
+    </div>
+    <div class="card" style="margin-top:18px"><h2 style="font-size:16px;margin-bottom:15px">Attendance Summary</h2><p style="color:var(--muted);font-size:13px;line-height:1.6">Overall attendance is <b>85%</b>. Mathematics is below the recommended 75% threshold. The AI recommendation engine will prioritize attendance alerts when necessary.</p></div>
+  </section>
+
+  <section class="page" id="analytics">
+    <div class="grid stats">
+      <div class="card"><p style="color:var(--muted)">Average Score</p><h2 style="margin-top:8px">78%</h2></div>
+      <div class="card"><p style="color:var(--muted)">Best Subject</p><h2 style="margin-top:8px">DBMS</h2></div>
+      <div class="card"><p style="color:var(--muted)">Needs Focus</p><h2 style="margin-top:8px">Maths</h2></div>
+      <div class="card"><p style="color:var(--muted)">Risk Level</p><h2 style="margin-top:8px;color:var(--warning)">Medium</h2></div>
+    </div>
+    <div class="card"><div class="card-title"><h2>AI Performance Insight</h2><span class="ai-badge">MODEL ANALYSIS</span></div><p style="line-height:1.7;color:#526074;font-size:14px">Your performance has improved over the last three assessments. Based on attendance, assignment completion, quiz scores and exam results, the current predicted academic performance is <b>78–84%</b>. Mathematics remains the main improvement area.</p></div>
+  </section>
+
+  <section class="page" id="recommendations">
+    <div class="card"><div class="card-title"><h2>Recommendations for You</h2><span class="ai-badge">AI POWERED</span></div>
+      <div class="recommendations">
+        <div class="recommendation"><div class="rec-icon">📚</div><div><h3>Focus on Mathematics</h3><p>Your recent scores in Mathematics are low. Practice Probability and Statistics.</p><button class="btn secondary" style="margin-top:9px">View Resources</button></div></div>
+        <div class="recommendation"><div class="rec-icon">🧠</div><div><h3>Improve Quiz Performance</h3><p>Try solving more quizzes to improve concept clarity and exam readiness.</p><button class="btn secondary" style="margin-top:9px">Start Quiz</button></div></div>
+        <div class="recommendation"><div class="rec-icon">⏱️</div><div><h3>Maintain Attendance</h3><p>Your Mathematics attendance is close to the minimum threshold. Attend upcoming classes regularly.</p><button class="btn secondary" style="margin-top:9px">View Attendance</button></div></div>
+        <div class="recommendation"><div class="rec-icon">🗓️</div><div><h3>Suggested Study Plan</h3><p>AI has created a weekly plan based on your weak subjects and upcoming assessments.</p><button class="btn" style="margin-top:9px">View Plan</button></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" id="ai">
+    <div class="card" style="max-width:850px">
+      <div class="card-title"><h2>✦ AI Academic Assistant</h2><span class="ai-badge">ONLINE</span></div>
+      <div id="chat" style="height:360px;overflow:auto;background:#f8f9fc;border-radius:12px;padding:15px;margin-bottom:14px">
+        <div style="background:#fff;border:1px solid var(--border);padding:12px;border-radius:10px;max-width:75%;font-size:13px;margin-bottom:10px">Hi! I can analyze your academic performance, suggest what to study, explain course topics, and create a personalized study plan. What would you like to know?</div>
+      </div>
+      <div style="display:flex;gap:8px"><input id="chatInput" placeholder="Ask: Which subject should I focus on?" style="flex:1;padding:12px;border:1px solid var(--border);border-radius:9px;outline:none"><button class="btn" onclick="sendChat()">Send</button></div>
+    </div>
+  </section>
+</main>
+</div>
+
+<script>
+const titles={
+ dashboard:["Welcome back, Deekshitha 👋","Here's your academic performance overview."],
+ courses:["My Courses","Track your course progress and learning materials."],
+ assignments:["Assignments","View, submit and track your academic assignments."],
+ exams:["Examinations","Take online exams and view your results."],
+ attendance:["Attendance","Monitor your attendance across all courses."],
+ analytics:["Performance Analytics","AI-powered insights into your academic performance."],
+ ai:["AI Academic Assistant","Get personalized help based on your learning data."],
+ recommendations:["Recommendations for You","Personalized academic recommendations generated from your performance."]
+};
+document.querySelectorAll('.nav button').forEach(btn=>{
+ btn.addEventListener('click',()=>showPage(btn.dataset.page));
+});
+function showPage(id){
+ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+ document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===id));
+ document.getElementById('pageTitle').textContent=titles[id][0];
+ document.getElementById('pageSubtitle').textContent=titles[id][1];
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+let q=1;
+const qbtn=document.getElementById('qbuttons');
+for(let i=1;i<=10;i++){
+ const b=document.createElement('button');b.textContent=i;b.onclick=()=>selectQuestion(i);qbtn.appendChild(b);
+}
+function selectQuestion(n){q=n;document.getElementById('qnum').textContent=n;document.querySelectorAll('#qbuttons button').forEach((b,i)=>b.classList.toggle('selected',i===n-1));}
+selectQuestion(1);
+function nextQuestion(){selectQuestion(q===10?1:q+1)}
+function sendChat(){
+ const input=document.getElementById('chatInput'),text=input.value.trim();if(!text)return;
+ const chat=document.getElementById('chat');
+ chat.innerHTML += `<div style="background:#3157d5;color:#fff;padding:12px;border-radius:10px;max-width:75%;margin:10px 0 10px auto;font-size:13px">${escapeHtml(text)}</div>`;
+ let reply="Based on your current academic data, Mathematics is the subject that needs the most attention. I recommend 30–45 minutes of focused practice each day, followed by a short quiz.";
+ if(/performance|score|marks/i.test(text)) reply="Your current overall performance is 78%. DBMS is your strongest subject at 86%, while Mathematics is currently 51%. Your predicted performance range is 78–84%.";
+ if(/study|plan/i.test(text)) reply="Try this plan: 45 min Mathematics, 30 min Java, 20 min DBMS revision, and one practice quiz each day. Review mistakes after every quiz.";
+ chat.innerHTML += `<div style="background:#fff;border:1px solid #e1e5ed;padding:12px;border-radius:10px;max-width:75%;font-size:13px;margin-bottom:10px">${reply}</div>`;
+ input.value="";chat.scrollTop=chat.scrollHeight;
+}
+function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
+</script>
+</body>
+</html>

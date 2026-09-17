@@ -1,0 +1,31 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ailms}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ailms}
+      POSTGRES_DB: ${POSTGRES_DB:-ailms}
+    volumes: [ailms-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U ailms -d ailms"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-ailms}:${POSTGRES_PASSWORD:-ailms}@postgres:5432/${POSTGRES_DB:-ailms}
+      JWT_SECRET: ${JWT_SECRET:-dev-only-change-me}
+      CORS_ORIGINS: http://localhost:5173
+    ports: ["8000:8000"]
+    depends_on:
+      postgres: {condition: service_healthy}
+  frontend:
+    image: node:22-alpine
+    working_dir: /app
+    volumes: [./frontend:/app]
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    ports: ["5173:5173"]
+    depends_on: [backend]
+volumes:
+  ailms-data:
